@@ -6,7 +6,7 @@ from rich.text import Text
 from rich.prompt import Prompt
 from rich import box
 
-import Config, Resources, ErrorHandler
+import Config, Resources, ErrorHandler, About
 
 console = Console()
 APP_VERSION = "1.6.3"
@@ -73,6 +73,7 @@ def main_menu():
         menu_table.add_row(f"[{theme['secondary']}]1[/]", "📂 [bold]Create Project[/]")
         menu_table.add_row(f"[{theme['secondary']}]2[/]", "📂 [bold]Open Project[/]")
         menu_table.add_row(f"[{theme['secondary']}]3[/]", "⚙️  [bold]Settings[/]")
+        menu_table.add_row(f"[{theme['secondary']}]4[/]", "ℹ️  [bold]About / License[/]")
         menu_table.add_row(f"[{theme['error']}]0[/]", "🚪 [bold red]Exit App[/]")
         
         console.print(Panel(menu_table, border_style=theme['secondary'], title="MAIN MENU"))
@@ -86,6 +87,7 @@ def main_menu():
         elif choice == "1": import CreateProject; CreateProject.run()
         elif choice == "2": import OpenProject; OpenProject.run()
         elif choice == "3": settings_menu()
+        elif choice == "4": About.show_about()
 
 if __name__ == "__main__":
     main_menu()
