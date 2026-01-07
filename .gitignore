@@ -6,4 +6,8 @@ __pycache__/
 *.log
 
 # User-specific settings
+<<<<<<< HEAD
 settings.json
+=======
+settings.json
+>>>>>>> v1.6.3
