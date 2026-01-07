@@ -75,7 +75,7 @@ def main_menu():
         menu_table.add_row(f"[{theme['secondary']}]3[/]", "⚙️  [bold]Settings[/]")
         menu_table.add_row(f"[{theme['error']}]0[/]", "🚪 [bold red]Exit App[/]")
         
-        console.print(Panel(menu_table, border_style=theme['secondary'], title="MAIN MENU"))
+        console.print(Panel(menu_table, border_style=theme['secondary'], title="MAIN MENU")
         
         # Статус-бар (не дает меню падать вниз)
         user = os.environ.get('USER', 'termux')
