@@ -1,85 +1,53 @@
-import os
-import shutil
-import sys
-import time
+import os, time, sys
 from rich.console import Console
+from rich.table import Table
 from rich.panel import Panel
 from rich.prompt import Prompt
+from rich.text import Text # ИСПРАВЛЕНО
+from rich import box
+import Config
 
 console = Console()
 PROJECTS_DIR = os.path.expanduser("~/mf2_projects")
 
-def get_projects():
-    if not os.path.exists(PROJECTS_DIR): os.makedirs(PROJECTS_DIR)
-    projects = [d for d in os.listdir(PROJECTS_DIR) if os.path.isdir(os.path.join(PROJECTS_DIR, d))]
-    projects.sort()
-    return projects
-
-def delete_project(project_name):
-    project_path = os.path.join(PROJECTS_DIR, project_name)
-    console.print(f"[bold red]WARN:[/ ] Удалить [white]{project_name}[/]?")
-    if Prompt.ask("Напишите 'del' для подтверждения", default="") == "del":
-        try:
-            shutil.rmtree(project_path)
-            console.print("[green]✅ Удалено[/]")
-            time.sleep(0.5)
-            return True
-        except Exception as e:
-            console.print(f"[red]Ошибка при удалении: {e}[/]")
-            input("Enter...")
-            return False
-    console.print("[yellow]Удаление отменено.[/]")
-    time.sleep(1)
-    return False
-
 def run():
     while True:
         console.clear()
-        console.print(Panel("[bold cyan]📂 EXPLORER[/]", border_style="cyan"))
+        theme = Config.get_theme()
         
-        projects = get_projects()
+        # Теперь Text определен!
+        console.print(Panel(
+            Text("📂 PROJECT EXPLORER", justify="center", style="bold white"),
+            style=f"white on {theme['secondary']}",
+            box=box.SQUARE
+        ))
+
+        if not os.path.exists(PROJECTS_DIR): os.makedirs(PROJECTS_DIR)
+        projects = [d for d in os.listdir(PROJECTS_DIR) if os.path.isdir(os.path.join(PROJECTS_DIR, d))]
         
+        if not projects:
+            console.print("\n[dim]У вас пока нет созданных проектов.[/]")
+            Prompt.ask("\nНажмите Enter, чтобы вернуться")
+            break
+
+        table = Table(expand=True, box=box.ROUNDED, border_style=theme['secondary'])
+        table.add_column("ID", style=theme['primary'], justify="center", width=4)
+        table.add_column("Название проекта (Folder)", style="bold white")
+        table.add_column("Путь", style="dim white")
+
         for idx, name in enumerate(projects, 1):
-            console.print(f" {idx}. {name}")
+            table.add_row(str(idx), name, f"~/mf2_projects/{name}")
+
+        console.print(table)
+        console.print(f"\n[bold {theme['primary']}]0[/] ⬅ Назад | [bold {theme['error']}]00[/] 🚪 Выход")
         
-        console.print("\n [0]  ⬅ Назад в Главное Меню")
-        console.print(" [00] 🚪 Exit")
-        
-        choice_str = Prompt.ask("\nSelect", default="0")
-        
-        if choice_str == "0": return
-        if choice_str == "00": 
-            console.print("[bold red]Bye![/]")
-            sys.exit()
-        
-        if choice_str.isdigit():
-            idx = int(choice_str)
-            if 1 <= idx <= len(projects):
-                selected = projects[idx - 1]
-                
-                # Мини-меню перед открытием
-                while True:
-                    console.clear()
-                    console.print(f"[bold cyan]Selected: {selected}[/]")
-                    console.print(" [1] Open")
-                    console.print(" [2] Delete")
-                    console.print(" [0] Cancel")
-                    
-                    act = Prompt.ask("Action", choices=["1", "2", "0", "00"], default="0")
-                    
-                    if act == "1":
-                        import MainProject
-                        res = MainProject.run(selected)
-                        # Если нажали "0" в MainProject, вернемся сюда (в список)
-                        # Если нажали "00", sys.exit() сработает внутри MainProject, сюда даже не дойдет
-                        if res == "BACK": break 
-                    elif act == "2":
-                        if delete_project(selected): break
-                    elif act == "0":
-                        break
-                    elif act == "00":
-                        console.print("[bold red]Bye![/]")
-                        sys.exit()
-        else:
-            console.print("[red]Неверный ввод[/]")
-            time.sleep(1)
+        choice = Prompt.ask("\nВыберите ID проекта")
+
+        if choice == "00": sys.exit()
+        if choice == "0": break
+
+        if choice.isdigit() and 1 <= int(choice) <= len(projects):
+            selected = projects[int(choice)-1]
+            import MainProject
+            res = MainProject.run(selected)
+            if res == "HOME": break
